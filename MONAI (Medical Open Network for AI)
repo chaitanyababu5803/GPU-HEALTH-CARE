@@ -1,0 +1,131 @@
+MONAI (Medical Open Network for AI) Training tutorials
+MONAI (Medical Open Network for AI) provides a comprehensive ecosystem of tutorials designed to help you build, train, and deploy medical AI models. 
+🚀 Core Learning Resources
+Official MONAI Tutorials Repository: The primary source for hands-on learning is the Project-MONAI/tutorials GitHub repository, which contains dozens of Jupyter notebooks for segmentation, classification, and GANs.
+NVIDIA MONAI Toolkit: Offers a structured learning experience through five comprehensive modules, covering everything from data labeling to model deployment.
+MONAI YouTube Channel: Features recordings of MONAI Bootcamps and technical deep dives into specific tools like MONAI Label. 
+
+🛠️ Key Training Pipelines
+Beginner: MedNIST Classification: A "Hello World" style tutorial using a small dataset of medical images (X-rays, MRI, CT) to teach basic MONAI transforms and training loops.
+Intermediate: 3D Spleen Segmentation: A step-by-step guide to training a 3D UNet model using the Medical Segmentation Decathlon dataset.
+Advanced: MONAI Bundle: Learn to use standardized config-based workflows that package models, metadata, and scripts for reproducibility. 
+
+🔍 Specialized Tooling Tutorials
+MONAI Label: Tutorials on how to use AI-assisted labeling in tools like 3D Slicer to reduce data annotation time.
+Auto3DSeg: Learn how to use AutoML for 3D medical imaging, which automatically tunes hyperparameters and architectures for your specific dataset.
+Federated Learning: Examples of using MONAI with NVIDIA FLARE or Flower to train models across multiple institutions without sharing raw data. 
+
+*************************
+https://github.com/Project-MONAI/tutorials/blob/main/README.md
+https://docs.nvidia.com/clara/monai/modules.html
+
+*****************
+Module Overview
+The NVIDIA MONAI Toolkit is designed to provide a comprehensive learning experience for users at all levels, from beginners to advanced practitioners. This guide is structured into five modules, each focusing on different aspects of medical image analysis using MONAI.
+
+Before you begin:
+
+Ensure you have met all system requirements
+
+Familiarize yourself with basic concepts in medical imaging and deep learning
+
+Set aside adequate time for each module - learning times may vary based on your experience level
+
+To get the most out of the NVIDIA MONAI Toolkit, we recommend going through each module sequentially and focusing on the specific tasks that interest you. The following chapters provide a comprehensive guide to using MONAI:
+
+Module 1: Getting Started - This module provides information on setting up your environment and using the NVIDIA MONAI Toolkit.
+
+Module 2: Using MONAI Label - If you’re at the start of your journey and want to learn how to speed up your image annotation process, check out this module.
+
+Module 3: Using MONAI Core - If you already have an annotated dataset and want to get started training with MONAI or integrate MONAI into your existing PyTorch training loop, this module is for you.
+
+Module 4: MONAI Federated Learning - If you’re interested in MONAI and Federated Learning working together, check out this module.
+
+Module 5: Performance and Benchmarking - For advanced topics, including benchmarking, performance profiling, and researcher best practices with MONAI, take a look at this chapter.
+
+Module 1. Getting Started
+MONAI Label is an open-source platform for medical data labeling and learning. It offers advanced active learning strategies that enable users to create annotated datasets and develop AI annotation models for clinical evaluation. Sample apps covering various medical imaging modalities are provided, and the platform supports multiple viewer tools and datastore platforms.
+
+Ready to start your journey with MONAI Label? Choose the modality that makes the most sense for your project and explore the sample apps provided. With the MONAI Toolkit, creating high-quality labeled datasets for medical AI applications has never been easier.
+
+MONAI Label for Radiology
+
+MONAI Label for Endoscopy
+
+MONAI Label for Pathology
+
+Bring your own Data
+
+Create your own Application
+
+Integration Guide
+
+Module 2. Using MONAI Label
+MONAI Label is an intelligent open-source image labeling and learning tool that enables users to create annotated datasets and build AI annotation models for clinical evaluation.
+
+MONAI Toolkit contains the MONAI Label and provides a plug-and-play environment for users. With a one-step setup of client viewers, MONAI Label allows researchers and developers to benefit from an interactive AI-Assisted labeling experience, including tutorials for different labeling scenarios.
+
+MONAI Label for Radiology
+
+MONAI Label for Endoscopy
+
+MONAI Label for Pathology
+
+Bring your own Data
+
+Create your own Application
+
+********************************
+https://in.mathworks.com/help/medical-imaging/ug/get-started-with-monai-label-in-medical-image-labeler-app.html
+*******************
+**********************
+MONAI basic project with code
+A basic MONAI project typically involves three pillars: Transforms (data prep), Networks (model architecture), and Datasets (efficient loading). 
+
+The most common "starter" project is 2D Medical Image Classification using the MedNIST dataset, which contains 58,954 2D images across 6 categories (e.g., AbdomenCT, CXR, ChestCT). 
+
+🛠️ Basic Setup & Code Example
+This example demonstrates a minimal pipeline to load data, apply transforms, and initialize a pre-built MONAI model. 
+
+python
+import torch
+from monai.networks.nets import DenseNet121
+from monai.transforms import (
+    Compose, LoadImage, EnsureChannelFirst, 
+    ScaleIntensity, ToTensor
+)
+from monai.apps import MedNISTDataset
+
+# 1. Define Pre-processing Transforms
+train_transforms = Compose([
+    LoadImage(image_only=True),
+    EnsureChannelFirst(),
+    ScaleIntensity(),
+    ToTensor(),
+])
+
+# 2. Use MONAI Apps for automatic data handling
+# This downloads and extracts the dataset if not present
+train_ds = MedNISTDataset(root_dir="./data", section="training", 
+                          transform=train_transforms, download=True)
+train_loader = torch.utils.data.DataLoader(train_ds, batch_size=300, shuffle=True)
+
+# 3. Initialize a MONAI-optimized Network
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = DenseNet121(
+    spatial_dims=2,   # 2D images
+    in_channels=1,    # Grayscale
+    out_channels=6    # 6 classes in MedNIST
+).to(device)
+
+# 4. Standard PyTorch Training Setup
+loss_function = torch.nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), 1e-5)
+Use code with caution.
+
+🔑 Essential Concepts for Beginners
+Dictionary-based Transforms: While the code above uses "Array" transforms, MONAI is famous for Dictionary transforms (e.g., LoadImaged) which allow you to apply the same operations to both images and labels simultaneously.
+CacheDataset: For medical imaging (like 3D MRI), use CacheDataset instead of a standard PyTorch Dataset to store transformed data in memory, speeding up training by up to 10x.
+Sliding Window Inference: For large 3D volumes that don't fit in GPU memory, MONAI provides a sliding_window_inference function to process them in overlapping crops. 
+
+For a more complex 3D project, you can follow the Spleen 3D Segmentation Tutorial on GitHub. 
