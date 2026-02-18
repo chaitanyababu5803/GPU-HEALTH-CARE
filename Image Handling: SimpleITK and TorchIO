@@ -1,0 +1,50 @@
+Image Handling: SimpleITK and TorchIO
+mage Handling: SimpleITK and TorchIO:basic exmaple with code
+In medical AI, SimpleITK is the industry standard for traditional image processing (resampling, NIfTI I/O), while TorchIO is built on top of it to provide a seamless "data augmentation" bridge for PyTorch. 
+🛠️ Basic Pipeline: SimpleITK to TorchIO
+python
+import SimpleITK as sitk
+import torchio as tio
+
+# 1. SimpleITK: Load and Basic Processing
+# Load a NIfTI or DICOM volume
+image_sitk = sitk.ReadImage("path/to/scan.nii.gz")
+
+# Apply a traditional filter (e.g., Curvature Flow Denoising)
+smooth_sitk = sitk.CurvatureFlow(image1=image_sitk, numberOfIterations=5)
+
+# 2. TorchIO: Convert and Augment
+# TorchIO can wrap a SimpleITK image directly into a 'Subject'
+subject = tio.Subject(
+    mri=tio.ScalarImage.from_sitk(smooth_sitk),
+    label=tio.LabelMap("path/to/mask.nii.gz") # Optional mask
+)
+
+# Define a pipeline of medical-specific transforms
+transforms = tio.Compose([
+    tio.RescaleIntensity(out_min_max=(0, 1)),      # Normalize
+    tio.RandomAffine(scales=(0.9, 1.1), degrees=10), # Augment
+    tio.RandomBiasField(p=0.5),                    # Simulate MRI artifacts
+    tio.ToCanonical(),                             # Standardize orientation
+])
+
+transformed_subject = transforms(subject)
+
+# 3. Access as PyTorch Tensor
+# Ready for model.forward()
+image_tensor = transformed_subject.mri.data 
+print(f"Tensor Shape: {image_tensor.shape}") # (Channels, Depth, Height, Width)
+Use code with caution.
+
+🔑 Why Use Both?
+SimpleITK: Best for geometry-aware operations. If you need to resample an image to a specific physical spacing (e.g., 1.0mm isotropic), SimpleITK handles the origin, direction, and spacing metadata correctly.
+TorchIO: Best for Deep Learning workflows. It handles "patches" (breaking 3D volumes into smaller cubes for GPU memory) and provides domain-specific augmentations like Bias Field (MRI noise) or Spiking artifacts. 
+🚀 Pro Tip: Resampling
+One of the most common tasks is resampling different scans to the same grid using SimpleITK's ResampleImageFilter:
+python
+resampler = sitk.ResampleImageFilter()
+resampler.SetReferenceImage(template_image)
+resampler.SetInterpolator(sitk.sitkLinear)
+new_image = resampler.Execute(moving_image)
+Use code with caution.
+
