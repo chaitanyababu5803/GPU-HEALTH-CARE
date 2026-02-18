@@ -1,0 +1,27 @@
+NVIDIA Parabricks basic exmaple with code
+To run NVIDIA Parabricks, you typically use a Docker or Singularity container to access its GPU-accelerated tools. Below is a basic example of the Germline Pipeline, which performs DNA alignment and variant calling—tasks that are up to 60x faster on a GPU compared to a standard CPU. 
+University of Arkansas
+University of Arkansas
+ +4
+1. Download Sample Data
+First, grab the official small test dataset to ensure your environment is configured correctly.
+bash
+wget -O parabricks_sample.tar.gz \
+https://s3.amazonaws.com/parabricks.sample/parabricks_sample.tar.gz
+tar xzvf parabricks_sample.tar.gz
+cd parabricks_sample
+Use code with caution.
+
+ 
+NVIDIA Docs
+NVIDIA Docs
+ +1
+2. Run the Germline Pipeline
+This command uses the pbrun germline tool to take raw sequencing data (FASTQ) and produce a sorted alignment file (BAM) and identified genetic variants (VCF). 
+NVIDIA Docs
+NVIDIA Docs
+ +1
+undefined
+undefined
+undefined
+10 sites
