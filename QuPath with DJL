@@ -1,0 +1,48 @@
+QuPath with DJL:basic exmaple with code
+Integrating QuPath with DJL (Deep Java Library) allows you to run high-performance AI inference (PyTorch, TensorFlow, or ONNX) directly within a pathology workspace using Java/Groovy. 
+In QuPath, you typically use a script to load a model and apply it to an image tile. 
+🛠️ Basic QuPath + DJL Script
+This Groovy script demonstrates how to initialize a DJL model and run a simple inference pass on the current image.
+groovy
+import ai.djl.repository.zoo.Criteria
+import ai.djl.training.util.ProgressBar
+import ai.djl.modality.cv.ImageFactory
+import ai.djl.modality.cv.output.DetectedObjects
+import ai.djl.repository.zoo.ZooModel
+
+// 1. Define the Model Criteria (using a pre-trained model from DJL Zoo)
+def criteria = Criteria.builder()
+    .setTypes(Image.class, DetectedObjects.class)
+    .optFilter("dataset", "coco")
+    .optEngine("PyTorch") // You can also use "TensorFlow" or "OnnxRuntime"
+    .build()
+
+// 2. Load the model
+try (ZooModel model = criteria.loadModel()) {
+    def predictor = model.newPredictor()
+
+    // 3. Get the current image from QuPath
+    def viewer = getCurrentViewer()
+    def imageData = getQuPath().getImageData()
+    def server = imageData.getServer()
+    
+    // Get a 512x512 tile from the center
+    int x = server.getWidth() / 2
+    int y = server.getHeight() / 2
+    def request = RegionRequest.createInstance(server.getPath(), 1.0, x, y, 512, 512)
+    def img = ImageFactory.getInstance().fromImage(getCurrentImage())
+
+    // 4. Run Inference
+    def results = predictor.predict(img)
+    println "Detection Results: " + results
+}
+Use code with caution.
+
+🔑 Why Use DJL in QuPath?
+Engine Agnostic: You can switch between PyTorch and TensorFlow without changing your Java code. Use the DJL Engine Selection guide to choose your backend.
+Memory Management: DJL handles the "off-heap" memory management for GPUs, which is critical since QuPath runs on the JVM.
+Integration: You can use the QuPath-Extension-DJL (available on GitHub) which provides a UI-friendly way to manage models without writing raw script every time. 
+🚀 Getting Started
+Install the Extension: Download and drag the QuPath DJL Extension JAR into your QuPath window.
+Select Engine: Use the DJL Model Zoo to find pre-trained models for object detection or segmentation.
+Run Scripts: Open the script editor (Automate -> Script Editor) and paste your Groovy code to interact with the DJL runtime. 
