@@ -43,3 +43,21 @@ Clara AGX DevKit: A high-performance kit combining an RTX 6000 GPU and Jetson mo
 Jetson AGX Thor: A newer, powerful board designed for real-time reasoning in robotics and complex medical sensor processing. 
 
 Are you interested in a hands-on tutorial for one of these tools, or do you need help selecting hardware for a specific medical project?
+
+****************************
+NVIDIA Clara ecosystem
+NVIDIA Clara is a unified medical AI platform that spans imaging, genomics, smart hospitals, and drug discovery. It provides the specialized hardware and software needed to bridge the gap between medical research and clinical deployment. 
+
+🏥 Key Pillars of NVIDIA Clara
+Medical Imaging (Clara Imaging & MONAI): This pillar focuses on building domain-specific AI models for radiology. It includes NVIDIA MONAI for model development and Clara Reason, which uses multimodal models to provide "chain-of-thought" diagnostic reasoning for radiologists.
+Medical Devices (Clara Holoscan): A real-time AI computing platform designed for medical instruments like endoscopes and surgical robots. It is often paired with the NVIDIA IGX hardware for medical-grade safety and performance.
+Genomics (Clara Parabricks): A suite of GPU-accelerated tools for secondary analysis of DNA and RNA data. It can reduce a 30-hour CPU-based whole genome analysis to just 10–25 minutes while maintaining functional equivalence to standard tools like GATK.
+Smart Hospitals (Clara Guardian): An application framework that integrates smart sensors (cameras, microphones) into hospitals to monitor patients, detect fever, or automate screening while maintaining edge-based data privacy.
+Drug Discovery (BioNeMo): Part of the broader Clara family, BioNeMo uses generative AI to accelerate protein engineering, small molecule discovery, and molecular dynamics. 
+
+💻 Core Components for Developers
+Component 	Function	Ideal For
+Holoscan SDK	Real-time sensor data processing.	Ultrasound, Endoscopy, Surgical Robotics.
+Parabricks	GPU-accelerated genomic pipelines.	WGS, WES, and RNA-seq analysis.
+NIM Microservices	Optimized, cloud-native AI models.	Fast deployment of LLMs and medical models.
+MONAI	Enterprise-grade medical imaging containers.	Training and validating segmentation models.
