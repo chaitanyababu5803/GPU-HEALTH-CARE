@@ -1,0 +1,58 @@
+NVIDIA BioNeMo:basic exmaple with code
+NVIDIA BioNeMo is a generative AI platform for drug discovery that uses Large Language Models (LLMs) to understand and generate biological data like protein sequences and small molecules. 
+NVIDIA Blog
+NVIDIA Blog
+ +1
+Because BioNeMo is built on NVIDIA NeMo, it uses Hydra-based configurations to manage complex training and inference pipelines. 
+NVIDIA Docs
+NVIDIA Docs
+🧬 Basic Protein Sequence Inference
+This example demonstrates the core logic for loading a pre-trained model (like ESM-2nv) to generate "embeddings"—numerical representations of a protein sequence that can be used for downstream tasks like property prediction. 
+NVIDIA Docs
+NVIDIA Docs
+ +1
+python
+import torch
+from bionemo.model.protein.esm2nv.model import ESM2nvModel
+from bionemo.core import setup_trainer
+
+# 1. Load the model configuration (typically from a YAML file)
+# In practice, you use @hydra_runner to inject this config
+cfg = {
+    "model": {
+        "encoder": {"num_layers": 33, "hidden_size": 1280},
+        "checkpoint": "esm2_650m_unity.nemo" # Path to model weights
+    }
+}
+
+# 2. Initialize the model and trainer
+trainer = setup_trainer(cfg)
+model = ESM2nvModel.restore_from(cfg.model.checkpoint, trainer=trainer)
+model.eval()
+
+# 3. Process a protein sequence (Amino Acid sequence)
+# Example: Insulin human sequence
+sequence = "GIVEQCCTSICSLYQLENYCN"
+tokens = model.tokenizer.encode(sequence)
+input_ids = torch.tensor([tokens]).to("cuda")
+
+# 4. Generate Embeddings (Hidden States)
+with torch.no_state():
+    hidden_states = model(input_ids)
+    # Mean pooling to get a single vector for the whole protein
+    protein_embedding = hidden_states.mean(dim=1)
+
+print(f"Generated embedding shape: {protein_embedding.shape}")
+Use code with caution.
+
+🛠️ Key Components
+BioNeMo Framework: A containerized library (available via NVIDIA NGC) that provides pre-built pipelines for models like MegaMolBART (chemistry) and OpenFold (structure).
+NIM (NVIDIA Inference Microservices): For production, NVIDIA recommends BioNeMo NIMs which provide simple API endpoints for structural prediction and docking without needing to manage the underlying model code.
+Recipes: BioNeMo uses "recipes"—standardized scripts and configs—to quickly start fine-tuning models on your own datasets. 
+GitHub
+GitHub
+ +3
+🚀 Running a Pipeline
+To run a full training or fine-tuning job, you typically execute a command-line script provided in the BioNeMo GitHub repository: 
+bash
+python pretrain.py --config-path=conf --config-name=pretrain_esm2_650M ++do_train
