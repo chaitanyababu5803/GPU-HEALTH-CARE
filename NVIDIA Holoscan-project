@@ -1,0 +1,53 @@
+NVIDIA Holoscan
+************************
+NVIDIA Holoscan basic exmpale with code
+To build a basic NVIDIA Holoscan application, you use the Holoscan SDK to create a Graph (Pipeline) where Operators (nodes) process streaming data.
+This example creates a simple "Hello World" pipeline: a Source generates data, and a Sink receives/logs it.
+🛠️ Basic Holoscan App (Python)
+python
+from holoscan.core import Application, Operator, OperatorSpec
+from holoscan.conditions import CountCondition
+
+# 1. Define a Custom Operator (The 'Work' node)
+class MyHelloOperator(Operator):
+    def setup(self, spec: OperatorSpec):
+        spec.input("input_port")
+        spec.output("output_port")
+
+    def compute(self, op_input, op_output, context):
+        message = op_input.receive("input_port")
+        print(f"Holoscan Processing: {message}")
+        op_output.emit(f"Processed_{message}", "output_port")
+
+# 2. Define the Application Graph
+class MyFirstHoloscanApp(Application):
+    def compose(self):
+        # Operators for a real app would be VideoStreamer, Inference, etc.
+        # Here we use a generic 'Ping' to simulate data
+        from holoscan.operators import PingTxOp, PingRxOp
+        
+        # Define Nodes
+        source = PingTxOp(self, CountCondition(self, 5), name="source")
+        processor = MyHelloOperator(self, name="processor")
+        sink = PingRxOp(self, name="sink")
+
+        # Connect Nodes (The Workflow)
+        self.add_flow(source, processor, {("out", "input_port")})
+        self.add_flow(processor, sink, {("output_port", "in")})
+
+# 3. Run it
+if __name__ == "__main__":
+    app = MyFirstHoloscanApp()
+    app.run()
+Use code with caution.
+
+🔑 Key Holoscan Concepts
+Operators: The building blocks of the pipeline. In a medical scenario, you would use specialized operators like the AJASourceOp for surgical camera feeds.
+Conditions: Controls when an operator runs (e.g., CountCondition for a fixed number of frames or BooleanCondition for a trigger).
+GXF: The underlying framework that ensures low-latency and zero-copy data transfer between the CPU and GPU.
+NVIDIA IGX: While Holoscan runs on various GPUs, it is optimized for NVIDIA IGX hardware for industrial-grade safety in operating rooms.
+🚀 Real-World Implementation
+To move beyond "Ping" messages, you would typically use the Holoscan Reference Applications which include code for:
+High-speed Video I/O (Endoscopy/Ultrasound).
+AI Inference (using TensorRT).
+Visualizer (displaying AI overlays on live video).
