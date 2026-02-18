@@ -1,0 +1,55 @@
+basic project with code
+Since you're looking at the NVIDIA Clara ecosystem, the gold standard for a "basic" project is a 3D Segmentation pipeline using Dictionary Transforms. This is how real-world medical imaging data (CT/MRI) is actually handled.
+This project uses the Spleen 3D Dataset and showcases how MONAI simplifies 3D volume processing.
+🏥 3D Spleen Segmentation Project
+python
+import torch
+from monai.networks.nets import UNet
+from monai.transforms import (
+    Compose, LoadImaged, EnsureChannelFirstd, 
+    Spacingd, Orientationd, ScaleIntensityRanged, Resized
+)
+from monai.data import Dataset, DataLoader
+
+# 1. Dictionary-based Data Prep
+# In MONAI, "d" at the end of a transform means it expects a Python Dictionary
+data_dicts = [{"image": "img1.nii.gz", "label": "seg1.nii.gz"}] # Placeholder paths
+
+transforms = Compose([
+    LoadImaged(keys=["image", "label"]),
+    EnsureChannelFirstd(keys=["image", "label"]),
+    # Standardize orientation to RAS (Right, Anterior, Superior)
+    Orientationd(keys=["image", "label"], axcodes="RAS"),
+    # Rescale CT intensity (Hounsfield Units) for the Spleen
+    ScaleIntensityRanged(
+        keys=["image"], a_min=-57, a_max=164,
+        b_min=0.0, b_max=1.0, clip=True,
+    ),
+    Resized(keys=["image", "label"], spatial_size=(128, 128, 128))
+])
+
+# 2. Optimized Dataset
+# Use CacheDataset in real runs to store results in RAM
+ds = Dataset(data=data_dicts, transform=transforms)
+loader = DataLoader(ds, batch_size=1)
+
+# 3. NVIDIA-Optimized 3D UNet
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = UNet(
+    spatial_dims=3,
+    in_channels=1,
+    out_channels=2, # Spleen vs Background
+    channels=(16, 32, 64, 128, 256),
+    strides=(2, 2, 2, 2),
+    num_res_units=2,
+).to(device)
+
+print("Project Setup Complete: Model & Pipeline ready for training.")
+Use code with caution.
+
+🛠️ Why this is "NVIDIA Clara" Style:
+Medical Domain Specifics: Notice ScaleIntensityRanged. In medical imaging, you don't just normalize 0-255; you target specific Hounsfield Units (HU) for the organ you want to see.
+Spatial Awareness: Orientationd ensures that if one scan was taken head-first and another feet-first, the AI sees them both the same way.
+Memory Management: 3D scans are huge. Using spatial_size=(128, 128, 128) or Sliding Window Inference (included in MONAI) prevents GPU "Out of Memory" errors.
+To run this properly, you can download the sample data from the Medical Segmentation Decathlon.
+Would you like the code for the Training Loop with the Dice Loss function specifically used for these 3D masks?
