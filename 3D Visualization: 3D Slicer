@@ -1,0 +1,42 @@
+3D Visualization: 3D Slicer
+*********************
+3D Visualization: 3D Slicer basic exmpale code
+3D Slicer is the standard open-source workstation for medical image visualization. While you can use the GUI, the Slicer Python API allows you to automate data loading and 3D rendering.
+To run this, open 3D Slicer, go to the Python Interactor (Ctrl+3), and paste the code.
+🛠️ Basic 3D Loading & Volume Rendering
+python
+import SampleData
+
+# 1. Load a sample 3D dataset (CT Chest)
+# This returns the 'MRML' node which represents the data in Slicer
+volumeNode = SampleData.downloadSample('CTChest')
+
+# 2. Setup 3D Volume Rendering
+volRenLogic = slicer.modules.volumerendering.logic()
+displayNode = volRenLogic.CreateDefaultVolumeRenderingNodes(volumeNode)
+
+# 3. Apply a "Preset" to make it look like a real 3D medical scan
+# Common presets: 'CT-Muscle', 'CT-Bone', 'CT-Air'
+shaderProperty = displayNode.GetVolumePropertyNode().GetShaderProperty()
+displayNode.GetVolumePropertyNode().Copy(volRenLogic.GetPresetByName('CT-Bone'))
+
+# 4. Center the 3D view
+layoutManager = slicer.app.layoutManager()
+threeDWidget = layoutManager.threeDWidget(0)
+threeDView = threeDWidget.threeDView()
+threeDView.resetFocalPoint()
+
+print(f"Successfully rendered 3D Volume: {volumeNode.GetName()}")
+Use code with caution.
+
+🔑 Essential Slicer Scripting Concepts
+MRML Nodes: Everything in Slicer is a MRML (Medical Reality Markup Language) node. Images are vtkMRMLScalarVolumeNode, and segmentations are vtkMRMLSegmentationNode.
+The Logic Layer: Modules in Slicer have a "Logic" class (e.g., slicer.modules.volumes.logic()) that handles background operations like file I/O or processing.
+MONAI Integration: You can connect Slicer to your AI models using the MONAI Label extension. This allows you to run your trained PyTorch models directly on the 3D volume in Slicer.
+🚀 Advanced: Scripting Segmentations
+If you want to visualize specific organs (like your MONAI spleen segmentation), you use the Segmentation Node:
+python
+# Create a new segmentation node
+segNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
+segNode.CreateDefaultDisplayNodes()
+segNode.SetReferenceImageGeometryParameterFromVolumeNode(volumeNode)
